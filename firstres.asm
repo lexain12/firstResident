@@ -29,7 +29,7 @@ start:
 
 New09 		proc
 
-	cli
+	cli 					; save all regs
 	push ax
 	push bx
 	push cx
@@ -38,7 +38,11 @@ New09 		proc
 	push di
 	pushf
 	
-	mov bx, 0b800h
+	push dx
+	push cx
+	push bx
+
+	mov bx, 0b800h 				; params for ax reg
 	mov es, bx
 	mov cx, 0
 	mov bx, 0
@@ -46,6 +50,30 @@ New09 		proc
 
 	call ShowAxH
 
+	pop bx
+	mov cx, 0 				; params for bx reg
+	mov ax, bx
+	mov bx, 1
+	mov dl, 02h
+
+	call ShowAxH
+
+	pop cx
+	mov ax, cx
+	mov cx, 00d
+	mov bx, 02d
+	mov dl, 02h
+
+	call ShowAxH
+
+	pop dx
+	mov ax, dx
+	mov cx, 00d
+	mov bx, 03d
+	mov dl, 02h
+
+	call ShowAxH
+	
 
 	popf
 	pop di
