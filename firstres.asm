@@ -7,14 +7,14 @@ org 100h
 
 ;------------------------------------------------
 x = 75
-y = 2
+y = 1
 ;------------------------------------------------
 
 start: 
 	cli
 	xor bx, bx
 	mov es, bx
-	mov bx, 4*8
+	mov bx, 4*9
 
 	mov ax, es:[bx]
 	mov Old09offset, ax
@@ -35,29 +35,34 @@ start:
 
 New09 		proc
 
-	cli 					; save all regs
+	pushf
 	push ax
 	push bx
 	push cx
 	push dx
 	push es
 	push di
-	pushf
 	
 	push dx
 	push cx
 	push bx
+	push ax
 
+	in al, 60h
+	cmp al, 3ah
+	jne commonKey
+
+	pop ax
 	mov bx, 0b800h 				; params for ax reg
 	mov es, bx
-	mov cx, x
+	mov cx, 75d
 	mov bx, y
 	mov dl, 02h
 
 	call ShowAxH
 
 	pop bx
-	mov cx, x 				; params for bx reg
+	mov cx, 75d 				; params for bx reg
 	mov ax, bx
 	mov bx, y + 1d
 	mov dl, 02h
@@ -86,16 +91,39 @@ New09 		proc
 	mov bl, 6d
 
 	call DrawTbl
+	
+	in al, 61h 				; talking to PPI
+	or al, 80h
+	out 61h, al 
+	and al, not 80h
+	out 61h, al
 
-	popf
+	mov al, 20h 				; talking to int controller
+	out 20h, al
+
 	pop di
 	pop es
 	pop dx
 	pop cx
 	pop bx
 	pop ax
-	sti
+	popf 
+	ret
 
+
+commonKey:
+	pop ax
+	pop bx
+	pop cx
+	pop dx
+
+	pop di
+	pop es
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	popf
 
 	db 0eah
 	Old09offset dw 0
