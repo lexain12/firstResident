@@ -35,7 +35,6 @@ start:
 
 New09 		proc
 
-	pushf
 	push ax
 	push bx
 	push cx
@@ -107,8 +106,7 @@ New09 		proc
 	pop cx
 	pop bx
 	pop ax
-	popf 
-	ret
+	iret
 
 
 commonKey:
@@ -123,7 +121,6 @@ commonKey:
 	pop cx
 	pop bx
 	pop ax
-	popf
 
 	db 0eah
 	Old09offset dw 0
