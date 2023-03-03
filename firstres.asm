@@ -6,7 +6,7 @@ locals ??
 org 100h
 
 ;------------------------------------------------
-x = 75
+x = 74
 y = 1
 ;------------------------------------------------
 
@@ -49,43 +49,68 @@ New09 		proc
 
 	in al, 60h
 	cmp al, 3ah
+
+jmp @@Data
+
+	oldFrame db 36 dup (0)
+	currentFrame db 36 dup (0)
+
+@@Data:
 	jne commonKey
+	
+	xor si, si
+	xor bx, bx
+
+@@Coping1: 					; copy lines
+
+	mov cx, 6
+	add si, x * 2
+	@@Coping: 				; copying one line
+		mov di, offset currentFrame
+		lodsw
+		stosw
+		loop @@Coping
+	sub si, x * 2
+	add si, 160d
+	inc bx
+	cmp bx, 6
+	je @@Coping1
 
 	pop ax
 	mov bx, 0b800h 				; params for ax reg
 	mov es, bx
-	mov cx, 75d
-	mov bx, y
+	mov cx, x + 01d
+	mov bx, y + 01d
 	mov dl, 02h
 
 	call ShowAxH
 
 	pop bx
-	mov cx, 75d 				; params for bx reg
+	mov cx, x + 01d				; params for bx reg
 	mov ax, bx
-	mov bx, y + 1d
+	mov bx, y + 02d
 	mov dl, 02h
 
 	call ShowAxH
 
 	pop cx
 	mov ax, cx
-	mov cx, x
-	mov bx, y + 2d
+	mov cx, x + 01d
+	mov bx, y + 03d
 	mov dl, 02h
 
 	call ShowAxH
 
 	pop dx
 	mov ax, dx
-	mov cx, x
-	mov bx, y + 03d
+	mov cx, x + 01d
+	mov bx, y + 04d
 	mov dl, 02h
 
 	call ShowAxH
 
-	mov ah, x - 1d
-	mov al, y - 1d
+	mov ah, x 
+	mov al, y 
 	mov bh, 6d
 	mov bl, 6d
 
