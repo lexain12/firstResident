@@ -140,21 +140,17 @@ New08  		proc
 	push ds
 	push es
 
-	mov si, (80d * y + x) * 2
-	call Comparasion
-
 	push dx 				; for printing a registers
 	push cx
 	push bx
 	push ax
+
 	mov bx, 0b800h 				; params for ax reg
 	mov es, bx
-	
 	mov si, (80d * y + x) * 2
-	mov di, offset DrawBuf
-	mov ax, 6d 				; Width 
-	mov bx, 6d 				; Height
-	call FromVidToBuf
+	call Comparasion
+
+	
 
 ;------Draw a table with regs--------------------
 
@@ -197,6 +193,11 @@ New08  		proc
 
 	call DrawTbl
 ;------------------------------------------------
+	mov si, (80d * y + x) * 2
+	mov di, offset DrawBuf
+	mov ax, 6d 				; Width 
+	mov bx, 6d 				; Height
+	call FromVidToBuf
 
 	
 	pop es
@@ -219,7 +220,7 @@ DrawBuf db 72 dup (0)
 ;---------------End of data----------------------
 
 
-;------------------------------------------------
+;-----------------------------------------------
 ; Show the ax register in hex on screen (x, y) pos
 ;------------------------------------------------
 ; Entry: 	cx = x, 
@@ -557,8 +558,8 @@ Comparasion 		proc
 	xor bx, bx
 	push si
 	@@Loop2:
-		mov al, cs:DrawBuf[bp]
-		cmp al, es:[si]
+		mov al, es:[si]
+		cmp al, cs:DrawBuf[bp]
 		je @@AllOk
 		mov cs:SaveBuf[bp], al
 	@@AllOk:

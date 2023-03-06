@@ -12,6 +12,7 @@ y = 1
 
 start: 
 	cli
+	mov oldDs, ds
 	xor bx, bx
 	mov es, bx
 	mov bx, 4*9
@@ -35,12 +36,8 @@ start:
 
 New09 		proc
 
-	push ax
-	push bx
-	push cx
-	push dx
-	push es
-	push di
+	pusha
+	push ds
 	
 	push dx
 	push cx
@@ -52,29 +49,36 @@ New09 		proc
 
 jmp @@Data
 
-	oldFrame db 36 dup (0)
-	currentFrame db 36 dup (0)
+	saveFrame db 72 dup (0)
+	oldFrame db 72 dup (0)
 
 @@Data:
-	jne commonKey
 	
 	xor si, si
+	mov bx, 0b800h
+	mov es, bx
 	xor bx, bx
-
+	
+	mov di, offset oldFrame
+	add si, x * 2
 @@Coping1: 					; copy lines
 
 	mov cx, 6
-	add si, x * 2
+
 	@@Coping: 				; copying one line
-		mov di, offset currentFrame
-		lodsw
-		stosw
+		mov ax, es:[si]
+		mov cs:[di], ax
+		inc si
+		inc si 
+		inc di 
+		inc di
 		loop @@Coping
-	sub si, x * 2
+
+	sub si, 12d
 	add si, 160d
 	inc bx
 	cmp bx, 6
-	je @@Coping1
+	jne @@Coping1
 
 	pop ax
 	mov bx, 0b800h 				; params for ax reg
@@ -125,12 +129,8 @@ jmp @@Data
 	mov al, 20h 				; talking to int controller
 	out 20h, al
 
-	pop di
-	pop es
-	pop dx
-	pop cx
-	pop bx
-	pop ax
+	pop ds
+	popa
 	iret
 
 
@@ -139,19 +139,48 @@ commonKey:
 	pop bx
 	pop cx
 	pop dx
-
-	pop di
-	pop es
-	pop dx
-	pop cx
-	pop bx
-	pop ax
+	
+	pop ds
+	popa
 
 	db 0eah
 	Old09offset dw 0
 	Old09Seg    dw 0
 	endp
 
+
+;------------------------------------------------
+; Fills save array 
+;------------------------------------------------
+; Entry: none
+; Exit: none
+; Expects: es = 0b800h
+; Destroys: 
+;------------------------------------------------
+FillSave 		proc
+	
+	mov di, offset oldFrame
+	add si, x * 2
+
+@@Check:
+	mov cx, 6
+
+	@@Check1:
+		mov ax, word ptr cs:[di]
+		cmp ax, word ptr es:[si]
+		je @@NothingChange
+
+
+		@@NothingChange:
+		inc si
+		inc si
+		inc di 
+		inc di
+		loop @@Check1
+
+	ret
+	endp
+;------------------------------------------------
 
 ;------------------------------------------------
 ; Show the ax register in hex on screen (x, y) pos

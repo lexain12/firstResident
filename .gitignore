@@ -2,3 +2,4 @@
 *.obj
 *.lst 
 *.map
+test*.asm
