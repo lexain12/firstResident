@@ -11,45 +11,7 @@ y = 1
 ;------------------------------------------------
 
 start: 
-	cli 					; change 08 int 
-	xor ax, ax
-	xor bx, bx
-	xor cx, cx
-	xor dx, dx
-	xor si, si
-	xor di, di 
-	xor bp, bp
-
-	mov es, bx
-	mov bx, 4*8
-
-	mov ax, es:[bx]
-	mov Old08offset, ax
-	mov es:[bx], offset New08
-
-	mov ax, es:[bx+2]
-	mov Old08Seg, ax
-	mov ax, cs
-	mov es:[bx+2], ax
-
-
-	mov bx, 4*9  				; change 09 int
-
-	mov ax, es:[bx]
-	mov Old09offset, ax
-	mov es:[bx], offset New09
-
-	mov ax, es:[bx+2]
-	mov Old09Seg, ax
-	mov ax, cs
-	mov es:[bx+2], ax
-	sti
-
-	mov ax, 3100h
-	mov dx, offset EOP
-	shr dx, 4
-	inc dx
-	int 21h
+	jmp EOP
 
 New09 		proc
 
@@ -72,7 +34,7 @@ New09 		proc
 	push es
 	push cx
 
-	mov di, offset SaveBuf
+	mov di, offset SaveBuf 			; recover video segment
 	mov bx, 0b800h
 	mov es, bx
 	mov si, (80d * y + x) * 2
@@ -86,7 +48,7 @@ New09 		proc
 	pop ax
 	pop si
 	pop di
-	popf
+	popf 					; why?
 
 	@@NotAlreadyOn:
 	xor cs:[Flag], 01h
@@ -94,7 +56,8 @@ New09 		proc
 	pushf
 	pusha
 	push es
-	mov bx, 0b800h
+
+	mov bx, 0b800h 				; save first frame 
 	mov es, bx
 	mov ax, 6d
 	mov bx, 6d
@@ -102,7 +65,7 @@ New09 		proc
 	mov di, offset SaveBuf
 	call FromVidToBuf
 
-	mov si, (80d * y + x) * 2
+	mov si, (80d * y + x) * 2 
 	mov di, offset DrawBuf
 	mov ax, 6d 				; Width 
 	mov bx, 6d 				; Height
@@ -218,6 +181,8 @@ Flag db 0h
 SaveBuf db 72 dup (0)
 DrawBuf db 72 dup (0)
 ;---------------End of data----------------------
+
+
 
 
 ;-----------------------------------------------
@@ -579,6 +544,47 @@ endp
 ;------------------------------------------------
 
 EOP:
+
+	xor ax, ax
+	xor bx, bx
+	xor cx, cx
+	xor dx, dx
+	xor si, si
+	xor di, di 
+	xor bp, bp
+
+	cli 					; change 08 int 
+	mov es, bx
+	mov bx, 4*8
+
+	mov ax, es:[bx]
+	mov Old08offset, ax
+	mov es:[bx], offset New08
+
+	mov ax, es:[bx+2]
+	mov Old08Seg, ax
+	mov ax, cs
+	mov es:[bx+2], ax
+
+
+	mov bx, 4*9  				; change 09 int
+
+	mov ax, es:[bx]
+	mov Old09offset, ax
+	mov es:[bx], offset New09
+
+	mov ax, es:[bx+2]
+	mov Old09Seg, ax
+	mov ax, cs
+	mov es:[bx+2], ax
+	sti
+
+	mov ax, 3100h
+	mov dx, offset EOP
+	shr dx, 4
+	inc dx
+	int 21h
+
 
 end start 
 
